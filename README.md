@@ -1,2 +1,2 @@
 # RRT-demo
-Rapidly Exploring Random Trees -- Interactive Demo
+Visit [RRT Demo](https://birongit.github.io/RRT-demo/) for an interactive demo on Rapidly Exploring Random Trees.
