@@ -41,7 +41,7 @@ function drawDot(position, style) {
 	cx.fill();
 }
 
-function drawLine(start, end, style, width = 2) {
+function drawLine(start, end, style, width = 1) {
 	cx.beginPath();
 	cx.moveTo(start[0], start[1]);
 	cx.lineTo(end[0], end[1]);
@@ -56,6 +56,12 @@ const canvasWidth = canvas.width;
 const canvasHeight = canvas.height;
 let cx = canvas.getContext("2d");
 
+// Colors
+const obstCol = "#CEBC81";
+const startCol = "#DA7B93";
+const goalCol = "#479761";
+const treeCol = "#000000";
+
 // Global variables
 const maxTreesize = 3000;
 let tree = d3.quadtree();
@@ -68,7 +74,7 @@ let req;
 function init() {
 	// Start of tree
 	start = [randFloat(canvasWidth), randFloat(canvasHeight)];
-	drawDot(start, "red");
+	drawDot(start, startCol);
 	tree.add(start);
 
 	// Sample obstacles
@@ -83,14 +89,14 @@ function init() {
 		}
 	}
 	for (i = 0; i < obstacleSize; i++) {
-		drawLine(obstacles[2 * i], obstacles[2 * i + 1], "blue");
+		drawLine(obstacles[2 * i], obstacles[2 * i + 1], obstCol, 2);
 	}
 
 	// Sample goal
 	goal = [randFloat(canvasWidth), randFloat(canvasHeight)];
-	drawDot(goal, "green");
+	drawDot(goal, goalCol);
 	if (!checkCollision(start, goal, obstacles)) {
-		drawLine(start, goal, "green");
+		drawLine(start, goal, goalCol, 3);
 		found = true;
 		return;
 	}
@@ -115,14 +121,19 @@ function explore() {
 		var nearest = tree.find(point[0], point[1]);
 		if (!checkCollision(point, nearest, obstacles)) {
 			// Add point to tree
-			// TODO: Append with additional data of parent point to reconstruct path like so
-			// p = [point[0], point[1], nearest[0], nearest[1]]
-			tree.add(point);
+			p = [point[0], point[1], nearest[0], nearest[1]]
+			tree.add(p);
 			// Connect points (draw path)
-			drawLine(nearest, point, "black");
+			drawLine(nearest, point, treeCol);
 
 			if (!checkCollision(point, goal, obstacles)) {
-				drawLine(goal, point, "green");
+				drawLine(goal, point, goalCol, 3);
+				var parent = tree.find(point[0], point[1]).slice(2, 4);
+				while (parent.length !== 0) {
+					drawLine(point, parent, goalCol, 3);
+					point = parent;
+					var parent = tree.find(point[0], point[1]).slice(2, 4);
+				}
 				found = true;
 				return;
 			}
