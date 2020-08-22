@@ -10,25 +10,39 @@ function randIntBase(size, base) {
 	return randInt(size / base) * base;
 }
 
-// TODO: tests when det === 0
-function intersects(a, b, c, d, p, q, r, s) {
- 	var det, gamma, lambda;
- 	det = (c - a) * (s - q) - (r - p) * (d - b);
- 	if (det === 0) {
-    	return false;
-  	} else {
-    	lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
-    	gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
-    	return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
- 	}
+function cross(p0, p1, p2) {
+	return (p0[0] - p1[0]) * (p2[1] - p1[1]) - (p2[0] - p1[0]) * (p0[1] - p1[1]);
+}
+
+function bothSides(line1, line2) {
+	return cross(line1[0], line1[1], line2[0]) *
+		   cross(line1[0], line1[1], line2[1]) < 0;
+}
+
+function onSegment(p0, p1, p2) {
+	return (cross(p0, p1, p2) === 0) &&
+		   (Math.min(p0[0], p1[0]) <= p2[0]) &&
+		   (Math.max(p0[0], p1[0]) >= p2[0]) &&
+		   (Math.min(p0[1], p1[1]) <= p2[1]) &&
+		   (Math.max(p0[1], p1[1]) >= p2[1])
+}
+
+function intersects(line1, line2) {
+	if (bothSides(line1, line2) && bothSides(line2, line1)) {
+			return true;
+		}
+	if (onSegment(line1[0], line1[1], line2[0]) ||
+		onSegment(line1[0], line1[1], line2[1]) ||
+		onSegment(line2[0], line2[1], line1[0]) ||
+		onSegment(line2[0], line2[1], line1[0])) {
+		return true;
+	}
 }
 
 function checkCollision(p1, p2, obstacle) {
 	for (i = 0; i < obstacles.length / 2; i++) {
-		if (intersects(p1[0], p1[1], p2[0], p2[1],
-			obstacle[2 * i][0], obstacle[2 * i][1],
-			obstacle[2 * i + 1][0], obstacle[2 * i + 1][1])) {
-				return true;
+		if (intersects([p1, p2], [obstacle[2*i], obstacle[2*i+1]])) {
+			return true;
 		}	
 	}
 	return false;
